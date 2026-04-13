@@ -397,9 +397,9 @@ export default function FuelMap() {
         sources: {
           osm: {
             type: "raster",
-            tiles: ["https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}.png"],
+            tiles: ["https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"],
             tileSize: 256,
-            attribution: "© Stadia Maps © OpenStreetMap contributors",
+            attribution: "© CartoDB © OpenStreetMap contributors",
           },
         },
         layers: [{ id: "osm", type: "raster", source: "osm" }],
