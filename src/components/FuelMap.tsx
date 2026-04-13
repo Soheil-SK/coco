@@ -499,6 +499,8 @@ export default function FuelMap() {
     [userPos, stationsData, radius, consumption, fillL],
   );
 
+  const [panelOpen, setPanelOpen] = useState(false);
+
   const refresh = () => {
     if (!mapRef.current) return;
     didFitRef.current = false;
@@ -511,68 +513,82 @@ export default function FuelMap() {
 
       <div className="pointer-events-none absolute left-3 top-3 z-10 flex max-w-[min(100%-1.5rem,22rem)] flex-col gap-2">
         <div className="pointer-events-auto rounded-lg border border-white/10 bg-slate-950/90 p-3 text-slate-100 shadow-lg backdrop-blur">
-          <h1 className="text-sm font-semibold tracking-tight text-white">
-            Stations-service — prix carburants
-          </h1>
-          <p className="mt-1 text-xs text-slate-400">
-            Couleur du point : prix du carburant choisi (vert = moins cher, rouge =
-            plus cher, gris = indisponible).
-          </p>
-          <label className="mt-3 block text-xs font-medium text-slate-300">
-            Carburant
-            <select
-              className="mt-1 w-full rounded border border-white/15 bg-slate-900 px-2 py-1.5 text-sm text-white outline-none focus:border-sky-500"
-              value={fuelId}
-              onChange={(e) => setFuelId(Number.parseInt(e.target.value, 10))}
-            >
-              {fuels.length === 0 ? (
-                <option value={1}>Chargement…</option>
-              ) : (
-                fuels.map((f) => (
-                  <option key={f.id} value={f.id}>
-                    {f.shortName} — {f.name}
-                  </option>
-                ))
-              )}
-            </select>
-          </label>
-          <div className="mt-2 flex gap-2">
+
+          {/* Ligne titre + toggle */}
+          <div className="flex items-center justify-between gap-2">
+            <h1 className="text-sm font-semibold tracking-tight text-white leading-tight">
+              Stations-service — prix carburants
+            </h1>
             <button
               type="button"
-              className="rounded bg-sky-600 px-2 py-1 text-xs font-medium text-white hover:bg-sky-500"
-              onClick={() => refresh()}
+              onClick={() => setPanelOpen((v) => !v)}
+              className="shrink-0 rounded border border-white/15 bg-white/5 px-2 py-0.5 text-xs text-slate-400 hover:bg-white/10"
             >
-              Rafraîchir données
+              {panelOpen ? "▲ Moins" : "▼ Plus"}
             </button>
           </div>
-          {meta && (
-            <dl className="mt-3 grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] text-slate-400">
-              <dt>Stations</dt>
-              <dd className="text-right text-slate-200">{meta.stationCount}</dd>
-              <dt>Avec prix ({meta.fuelShortName})</dt>
-              <dd className="text-right text-slate-200">{meta.pricedCount}</dd>
-              {meta.minPrice != null && (
-                <>
-                  <dt>Min / max</dt>
-                  <dd className="text-right text-slate-200">
-                    {meta.minPrice.toFixed(3)} — {meta.maxPrice?.toFixed(3)} €
-                  </dd>
-                </>
-              )}
-            </dl>
-          )}
-        </div>
 
-        <div className="pointer-events-none rounded border border-white/10 bg-slate-950/80 px-2 py-1 text-[10px] text-slate-400">
-          Données :{" "}
-          <a
-            className="pointer-events-auto text-sky-400 underline"
-            href="https://data.economie.gouv.fr/explore/dataset/prix-des-carburants-en-france-flux-instantane-v2"
-            target="_blank"
-            rel="noreferrer"
+          {/* Sélecteur — toujours visible */}
+          <select
+            className="mt-2 w-full rounded border border-white/15 bg-slate-900 px-2 py-1.5 text-sm text-white outline-none focus:border-sky-500"
+            value={fuelId}
+            onChange={(e) => setFuelId(Number.parseInt(e.target.value, 10))}
           >
-            data.economie.gouv.fr (flux instantané)
-          </a>
+            {fuels.length === 0 ? (
+              <option value={1}>Chargement…</option>
+            ) : (
+              fuels.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.shortName} — {f.name}
+                </option>
+              ))
+            )}
+          </select>
+
+          {/* Contenu étendu */}
+          {panelOpen && (
+            <>
+              <p className="mt-2 text-xs text-slate-400">
+                Vert = moins cher · Rouge = plus cher · Gris = indisponible
+              </p>
+              <div className="mt-2">
+                <button
+                  type="button"
+                  className="rounded bg-sky-600 px-2 py-1 text-xs font-medium text-white hover:bg-sky-500"
+                  onClick={() => refresh()}
+                >
+                  Rafraîchir données
+                </button>
+              </div>
+              {meta && (
+                <dl className="mt-3 grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] text-slate-400">
+                  <dt>Stations</dt>
+                  <dd className="text-right text-slate-200">{meta.stationCount}</dd>
+                  <dt>Avec prix ({meta.fuelShortName})</dt>
+                  <dd className="text-right text-slate-200">{meta.pricedCount}</dd>
+                  {meta.minPrice != null && (
+                    <>
+                      <dt>Min / max</dt>
+                      <dd className="text-right text-slate-200">
+                        {meta.minPrice.toFixed(3)} — {meta.maxPrice?.toFixed(3)} €
+                      </dd>
+                    </>
+                  )}
+                </dl>
+              )}
+              <div className="mt-2 text-[10px] text-slate-500">
+                Données :{" "}
+                <a
+                  className="text-sky-400 underline"
+                  href="https://data.economie.gouv.fr/explore/dataset/prix-des-carburants-en-france-flux-instantane-v2"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  data.economie.gouv.fr
+                </a>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -721,9 +737,10 @@ function StationCard({ s, fillL }: { s: NearbyStation; fillL: number }) {
         <div className="text-[10px] text-slate-500 mt-0.5">depuis ma position · coût en essence</div>
       </div>
 
-      {/* Prix/L — centré */}
-      <div className="text-center text-sm font-semibold text-slate-200">
-        {s.price.toFixed(3)} €/L
+      {/* Prix/L — centré, gros */}
+      <div className="text-center">
+        <div className="text-2xl font-bold text-white leading-none">{s.price.toFixed(3)}</div>
+        <div className="text-[10px] text-slate-400 mt-0.5">€ / litre</div>
       </div>
 
       {/* Prix du plein — gros, centré */}
